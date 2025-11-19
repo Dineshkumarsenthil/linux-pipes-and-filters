@@ -1,4 +1,4 @@
-# linux-pipes-and-filters
+# linux-pipes-and-filters -Day 9
 ---
 ### Filter log for a specific event with grep
 ```
@@ -12,14 +12,13 @@ grep "CALL_DROP" telecom.log | awk -F',' '{print $3}'
 ```
 sed '1d' segregated_log.csv
 ```
-### — Sort and count with sort + uniq –c
+### Sort and count with sort + uniq –c
 ```
 grep "CALL_DROP" segregated_log.csv | awk -F',' '{print $3}' | sort | uniq -c
 ```
 ### Add a header and limit results with head 
 ```
-grep "CALL_DROP" segregated_log.csv | awk -F',' '{print $3}' | sort | uniq -c
-
+grep "CALL_DROP" telecom.log | sed 's/.*CELLID=//; s/,.*//' | sort | uniq -c | sort -nr | head
 ```
 ### Extract IMSIs that experienced call drops 
 ```
@@ -27,8 +26,14 @@ grep -oE '[0-9]{15}' segregated_log.csv
 ```
 ### Filter call drops with RSRP worse than -105 dBm
 ```
- awk -F',' '$5 <-105{print $1, $2, $3, $4}' segregated_log.csv
+awk -F',' '$5 <-105{print $1, $2, $3, $4}' segregated_log.csv
 awk -F'\t' 'BEGIN{print "CELL_ID"} NR>1{print $3}' segregated_log.csv | head
 ```
 ---
-## Summary
+### Compact One-Liner (Full Summary Pipeline)
+```
+grep "CALL_DROP" telecom.log \
+| awk -F',' '$5 < -105 {gsub("CELL_ID=", "", $3); gsub(" ", "", $3); print $3}' \| sort | uniq -c | sort -nr | head
+```
+---
+
